@@ -177,8 +177,8 @@ class TaskListCreateView(APIView):
 
             if task.assignee:
                 cache.delete(assignee_cache_key(task.assignee.id))
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TaskDetailView(APIView):
@@ -212,22 +212,6 @@ class TaskDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, pk):
-        """Status transition only — assignee or MANAGER."""
-        task = self.get_object(pk, request)
-        role = request.user.profile.role
-
-        if role == "MEMBER" and task.assignee != request.user:
-            return error_response(403, "PERMISSION_DENIED", "You can only update your own tasks.")
-
-        serializer = TaskStatusSerializer(task, data=request.data)
-        if serializer.is_valid():
-            updated = serializer.save()
-            if updated.assignee:
-                cache.delete(assignee_cache_key(updated.assignee.id))
-            return Response(TaskSerializer(updated).data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def delete(self, request, pk):
         task = self.get_object(pk, request)
         role = request.user.profile.role
@@ -237,5 +221,25 @@ class TaskDetailView(APIView):
         task.delete()
         if assign:
             cache.delete(assignee_cache_key(assign.id))
-            return Response({"message": "Task deleted successfully"})
         return Response({"message": "Task deleted successfully"})
+
+
+class TaskStatusUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        task = get_object_or_404(
+            Task, pk=pk, project__org=request.user.profile.org
+        )
+        role = request.user.profile.role
+
+        if role == "MEMBER" and task.assignee != request.user:
+            return error_response(403, "PERMISSION_DENIED", "Only the assignee can update this task's status.")
+
+        serializer = TaskStatusSerializer(task, data=request.data)
+        if serializer.is_valid():
+            updated = serializer.save()
+            if updated.assignee:
+                cache.delete(assignee_cache_key(updated.assignee.id))
+            return Response(TaskSerializer(updated).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

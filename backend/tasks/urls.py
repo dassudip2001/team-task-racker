@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.urls import path
 
-from tasks.views import ListCreateView, FindUpdateDelete, TaskListCreateView, TaskDetailView
+from tasks.views import ListCreateView, FindUpdateDelete, TaskListCreateView, TaskDetailView, TaskStatusUpdateView
 
 urlpatterns = [
     path("projects/", ListCreateView.as_view(), name="projects-list-create"),
     path("projects/<uuid:id>/", FindUpdateDelete.as_view(), name="projects-detail"),
     path("tasks/", TaskListCreateView.as_view(), name="task-list-create"),
     path("tasks/<uuid:pk>/", TaskDetailView.as_view(), name="task_detail"),
+    path("tasks/<uuid:pk>/status/", TaskStatusUpdateView.as_view(), name="task_status"),
+
 ]
