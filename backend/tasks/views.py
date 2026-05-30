@@ -11,14 +11,34 @@ from .serializer import ProjectSerializer, TaskSerializer, TaskStatusSerializer
 from tasks.models import Project, Task
 
 
-def userBenlongsToOrganization(request):
-    if request.user.profile.org is None:
+def userBelongsToOrganization(request):
+    try:
+        profile = request.user.profile
+    except Exception:
         return Response(
-            {"error": "User organization not found."},
+            {
+                "success": False,
+                "error": {
+                    "code": "PROFILE_NOT_FOUND",
+                    "message": "User profile not found."
+                }
+            },
             status=status.HTTP_400_BAD_REQUEST
         )
-    return None
 
+    if profile.org is None:
+        return Response(
+            {
+                "success": False,
+                "error": {
+                    "code": "ORGANIZATION_NOT_FOUND",
+                    "message": "User is not assigned to an organization."
+                }
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return None
 
 def error_response(http_status, code, message):
     return Response(
@@ -34,7 +54,7 @@ class FindUpdateDelete(APIView):
         return [IsAuthenticated()]
 
     def get(self, request, id):
-        error = userBenlongsToOrganization(request)
+        error = userBelongsToOrganization(request)
         if error:
             return error
         try:
@@ -50,7 +70,7 @@ class FindUpdateDelete(APIView):
         return Response(projectSerializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, id):
-        error = userBenlongsToOrganization(request)
+        error = userBelongsToOrganization(request)
         if error:
             return error
         try:
@@ -88,7 +108,7 @@ class ListCreateView(APIView):
         return [IsAuthenticated()]
 
     def get(self, request):
-        error = userBenlongsToOrganization(request)
+        error = userBelongsToOrganization(request)
         if error:
             return error
 
@@ -101,7 +121,7 @@ class ListCreateView(APIView):
         serializer = ProjectSerializer(data=request.data)
 
         if serializer.is_valid():
-            error = userBenlongsToOrganization(request)
+            error = userBelongsToOrganization(request)
             if error:
                 return error
             serializer.save(org=request.user.profile.org)

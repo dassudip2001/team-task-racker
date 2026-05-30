@@ -12,6 +12,12 @@ class SignUpSerializer(serializers.Serializer):
         password = validated_data['password']
         username = validated_data['username']
 
+        if username == "" or email == "" or password == "":
+            raise serializers.ValidationError("All fields are required")
+
+        if User.objects.filter(email=email).exists() or User.objects.filter(username=username).exists():
+            raise serializers.ValidationError("Email or username already exists")
+
         user = User.objects.create_user(
             username=username,
             email=email,
