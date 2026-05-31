@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from organization.models import UserProfile
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -23,5 +24,5 @@ class SignUpSerializer(serializers.Serializer):
             email=email,
             password=password
         )
-
+        UserProfile.objects.create(user=user)
         return user

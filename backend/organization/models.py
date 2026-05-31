@@ -24,7 +24,7 @@ class UserProfile(models.Model):
         MEMBER = "MEMBER"
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    org = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members')
+    org = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.SET_NULL, related_name='members')
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
