@@ -28,11 +28,16 @@ api.interceptors.response.use(
         const refreshToken = useAuthStore.getState().refreshToken;
 
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/refresh/`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/token/refresh/`,
           {
             refresh: refreshToken,
           },
         );
+        console.log(
+          "Token refreshed successfully",
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/token/refresh/`,
+        );
+        console.log(response, ".......................");
 
         const newAccess = response.data.access;
 

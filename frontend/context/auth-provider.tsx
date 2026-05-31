@@ -6,9 +6,6 @@ import { useUserStore } from "@/store/userStore";
 import api from "@/lib/axios";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setTokens } = useAuthStore();
-  const { setUser, user } = useUserStore();
-
   useEffect(() => {
     const initializeAuth = async () => {
       // Helper to parse cookies
@@ -22,13 +19,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const refresh = getCookie("refresh_token");
 
       if (access && refresh) {
-        // Hydrate the zustand store so axios interceptor can use the token
-        setTokens(access, refresh);
+        // Hydrate the zustand store directly without subscribing the component to state updates
+        useAuthStore.getState().setTokens(access, refresh);
 
-        if (!user) {
+        const currentUser = useUserStore.getState().user;
+        if (!currentUser) {
           try {
             const userRes = await api.get("/profile/");
-            setUser(userRes.data);
+            useUserStore.getState().setUser(userRes.data);
           } catch (e) {
             console.error("Failed to fetch user on refresh", e);
           }
@@ -37,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, [setTokens, setUser, user]);
+  }, []); // Run exactly once on mount to initialize auth state
 
   return <>{children}</>;
 }
