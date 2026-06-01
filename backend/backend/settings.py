@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure--$o$m(uk&3uppt7=xa=*$t&ss8n=y+k^c3v#1f!ht&rtbt^d2o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", default="False")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "task-team.onrender.com"]
 
 # Application definition
 
@@ -155,10 +155,14 @@ CACHES = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://team-task-racker.vercel.app",
+    "https://task-team.onrender.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://team-task-racker.vercel.app",
+    "https://task-team.onrender.com"
 ]
 
